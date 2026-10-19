@@ -15,6 +15,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name' => 'Administrator',
                 'email' => 'admin@portadata.local',
+                'role' => 'admin',
                 'password' => Hash::make('password'),
             ]
         );

@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
+    public function __construct(
+        private readonly JwtService $jwtService
+    ) {}
+
     public function login(string $username, string $password): array
     {
         $user = User::where('username', $username)
@@ -18,8 +22,8 @@ class AuthService
             throw new Exception("Username atau password salah.", 401);
         }
 
-        // Generate Sanctum Token
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Generate Standard RFC 7519 JWT Token
+        $token = $this->jwtService->createToken($user);
 
         return [
             'token' => $token,
@@ -28,12 +32,16 @@ class AuthService
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'role' => $user->role ?? 'admin',
             ],
         ];
     }
 
     public function logout(User $user): void
     {
-        $user->currentAccessToken()?->delete();
+        // Stateless JWT logout - frontend clears the stored token
+        if (method_exists($user, 'currentAccessToken')) {
+            $user->currentAccessToken()?->delete();
+        }
     }
 }
