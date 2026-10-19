@@ -58,6 +58,36 @@ class JwtService
     }
 
     /**
+     * Encode an arbitrary data array into an RFC 7519 JWT string.
+     */
+    public function encodePayload(array $data, ?int $ttl = null): string
+    {
+        $ttl = $ttl ?? (int) env('JWT_TTL', 86400);
+
+        $header = [
+            'typ' => 'JWT',
+            'alg' => 'HS256',
+        ];
+
+        $now = time();
+        $payload = [
+            'iss' => (string) config('app.url', 'http://localhost'),
+            'iat' => $now,
+            'exp' => $now + $ttl,
+            'jti' => bin2hex(random_bytes(16)),
+            'payload' => $data,
+        ];
+
+        $headerEncoded = $this->base64UrlEncode(json_encode($header, JSON_UNESCAPED_SLASHES));
+        $payloadEncoded = $this->base64UrlEncode(json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        $signature = hash_hmac('sha256', "{$headerEncoded}.{$payloadEncoded}", $this->secretKey, true);
+        $signatureEncoded = $this->base64UrlEncode($signature);
+
+        return "{$headerEncoded}.{$payloadEncoded}.{$signatureEncoded}";
+    }
+
+    /**
      * Validate and decode an RFC 7519 JWT token.
      * Returns the payload array if valid, or null if invalid / expired.
      */

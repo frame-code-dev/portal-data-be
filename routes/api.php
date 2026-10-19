@@ -10,8 +10,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Protected routes (JWT Authentication)
-Route::middleware('auth.jwt')->group(function () {
+// Protected routes (JWT Authentication & Encoded Response)
+Route::middleware(['auth.jwt', 'jwt.response'])->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);

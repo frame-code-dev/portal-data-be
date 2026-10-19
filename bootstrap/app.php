@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.jwt' => JwtAuthenticate::class,
             'role' => EnsureUserRole::class,
+            'jwt.response' => \App\Http\Middleware\JwtResponseMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
